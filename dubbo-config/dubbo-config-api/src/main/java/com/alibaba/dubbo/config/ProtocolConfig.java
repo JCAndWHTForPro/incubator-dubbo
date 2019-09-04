@@ -54,7 +54,7 @@ public class ProtocolConfig extends AbstractConfig {
     // thread pool
     private String threadpool;
 
-    // thread pool size (fixed size)
+    // 线程池的大小（固定大小）
     private Integer threads;
 
     // IO thread pool size (fixed size)

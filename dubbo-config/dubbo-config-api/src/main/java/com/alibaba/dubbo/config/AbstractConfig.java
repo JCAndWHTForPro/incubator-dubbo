@@ -172,43 +172,67 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters(parameters, config, null);
     }
 
+    /**
+     *
+     * @param parameters 所有属性会放到URL里面
+     * @param config 这里的config可以是ApplicationConfig，也可以是RegistryConfig等等
+     * @param prefix
+     */
     @SuppressWarnings("unchecked")
     protected static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         if (config == null) {
             return;
         }
+        // 获取配置类里面的所有方法
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
                 String name = method.getName();
+                // 可以看到，这里是获取配置类里面的所有get或者is方法
                 if ((name.startsWith("get") || name.startsWith("is"))
+                        // getClass方法要干掉
                         && !"getClass".equals(name)
+                        // 是一个public的方法
                         && Modifier.isPublic(method.getModifiers())
+                        // 没有入参
                         && method.getParameterTypes().length == 0
+                        // 是一些基本数据结构或者是他们的包装类
                         && isPrimitive(method.getReturnType())) {
+                    // Parameter注解这里会对每个get方法进行判断
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
                     }
+                    // 上面这里获取key值
+                    // 这里也很生硬啦，get是3个，is是两个
                     int i = name.startsWith("get") ? 3 : 2;
                     String prop = StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
                     String key;
+                    // 如果parameter注解里面设置类key值，使用key，否则用get方法去除get三个字符之后的字符串转义
                     if (parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         key = prop;
                     }
+
+
+                    // 下面这里主要是对具体的value值进行处理
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
+                        // 是否转义，在这里用上了
                         if (parameter != null && parameter.escaped()) {
                             str = URL.encode(str);
                         }
+                        // 这里会进行判断：这个配置项是否要追加到现有的配置项里面
                         if (parameter != null && parameter.append()) {
+                            // 首先这里看下有没有默认值，有的话，会和现在的设置的值，拼接到一起
                             String pre = parameters.get(Constants.DEFAULT_KEY + "." + key);
                             if (pre != null && pre.length() > 0) {
+                                // 看拼接
                                 str = pre + "," + str;
                             }
+                            // 这里就是前面设置的值，现在这个和前面的进行拼接
                             pre = parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
@@ -217,6 +241,7 @@ public abstract class AbstractConfig implements Serializable {
                         if (prefix != null && prefix.length() > 0) {
                             key = prefix + "." + key;
                         }
+                        // 这里将我们的key->value，设置进map对象里面
                         parameters.put(key, str);
                     } else if (parameter != null && parameter.required()) {
                         throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " == null");
@@ -224,7 +249,9 @@ public abstract class AbstractConfig implements Serializable {
                 } else if ("getParameters".equals(name)
                         && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 0
+                        // 返回的值，是一个map类型的
                         && method.getReturnType() == Map.class) {
+                    // 将已有的一些参数，设置到当前的map里面
                     Map<String, String> map = (Map<String, String>) method.invoke(config, new Object[0]);
                     if (map != null && map.size() > 0) {
                         String pre = (prefix != null && prefix.length() > 0 ? prefix + "." : "");

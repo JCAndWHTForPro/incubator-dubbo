@@ -37,7 +37,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * URL - Uniform Resource Locator (Immutable, ThreadSafe)
+ * URL - 统一的定位标识，所有的请求都会转换成一个URL类 (不可变类, 线程安全)
  * <p>
  * url example:
  * <ul>

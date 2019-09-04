@@ -183,6 +183,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private void init() {
+        // 是否被初始化
         if (initialized) {
             return;
         }
@@ -209,6 +210,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
+        // 可以到一个指定的文件进行加载，这个文件的环境变量是：dubbo.resolve.file
         if (resolve == null || resolve.length() == 0) {
             resolveFile = System.getProperty("dubbo.resolve.file");
             if (resolveFile == null || resolveFile.length() == 0) {

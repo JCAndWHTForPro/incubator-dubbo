@@ -383,6 +383,14 @@ public final class StringUtils {
         return buf.toString();
     }
 
+
+    /**
+     * 这个方法会将驼峰的命名字符串，转换成"."相连的字符串
+     * 例如：NameSplit -> name.split
+     * @param camelName
+     * @param split
+     * @return
+     */
     public static String camelToSplitName(String camelName, String split) {
         if (camelName == null || camelName.length() == 0) {
             return camelName;

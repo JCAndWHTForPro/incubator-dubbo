@@ -27,19 +27,24 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD})// 只能在方法上面使用
 public @interface Parameter {
 
     String key() default "";
 
+    // 是否必填
     boolean required() default false;
 
+    // 是否忽略
     boolean excluded() default false;
 
+    // 是否转义
     boolean escaped() default false;
 
+    // 是否为属性
     boolean attribute() default false;
 
+    // 是否拼接默认属性
     boolean append() default false;
 
 }
