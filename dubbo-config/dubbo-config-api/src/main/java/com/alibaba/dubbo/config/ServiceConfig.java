@@ -192,6 +192,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return unexported;
     }
 
+    /**
+     * 整个服务注册的核心！
+     */
     public synchronized void export() {
         if (provider != null) {
             if (export == null) {
@@ -262,6 +265,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 monitor = application.getMonitor();
             }
         }
+        /**
+         * 泛接口实现方式主要用于服务器端没有API接口及模型类元的情况，
+         * 参数及返回值中的所有POJO均用Map表示，通常用于框架集成，
+         * 比如：实现一个通用的远程服务Mock框架，可通过实现GenericService接口处理所有服务请求。
+         */
         if (ref instanceof GenericService) {
             interfaceClass = GenericService.class;
             if (StringUtils.isEmpty(generic)) {
@@ -308,6 +316,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         checkApplication();
         checkRegistry();
+        // 在这里会new一个protocol：com.alibaba.dubbo.config.ProtocolConfig
         checkProtocol();
         appendProperties(this);
         checkStub(interfaceClass);
@@ -315,6 +324,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
+
         doExportUrls();
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
@@ -354,7 +364,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        // 组装服务注册过程中的注册中心URL
         List<URL> registryURLs = loadRegistries(true);
+        // 这个是使用的什么协议进行注册
         for (ProtocolConfig protocolConfig : protocols) {
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
@@ -366,10 +378,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             name = "dubbo";
         }
 
+        // 这里开始使用一个map，将所有的要暴露的参数，k-v形式先存起来
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+        // 获取进程id
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }

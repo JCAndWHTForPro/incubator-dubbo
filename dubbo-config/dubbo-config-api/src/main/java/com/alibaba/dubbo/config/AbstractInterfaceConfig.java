@@ -159,21 +159,26 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected List<URL> loadRegistries(boolean provider) {
+        // 检查当前注册中心的配置存在不存在
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (address == null || address.length() == 0) {
+                    // 没有设置注册中心地址，就使用：0.0.0.0
                     address = Constants.ANYHOST_VALUE;
                 }
+                // 系统参数里面dubbo.registry.address，不为空，就使用他
                 String sysaddress = System.getProperty("dubbo.registry.address");
                 if (sysaddress != null && sysaddress.length() > 0) {
                     address = sysaddress;
                 }
                 if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
+                    // 将应用信息写入map里面
                     appendParameters(map, application);
+                    // 将注册中心的连接信息写入map里面
                     appendParameters(map, config);
                     map.put("path", RegistryService.class.getName());
                     map.put("dubbo", Version.getProtocolVersion());

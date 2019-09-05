@@ -270,6 +270,13 @@ public abstract class AbstractConfig implements Serializable {
         appendAttributes(parameters, config, null);
     }
 
+    /**
+     * 这种，有别于appendParameter，appendParameter主要是要将参数添加到
+     * URL里面暴露出去的，这种还是自己使用！
+     * 例如，对getLocalName方法，最终map里面的key值，appendParameter是local.name
+     * 而这个appendAttributes就是localName
+     *
+     */
     protected static void appendAttributes(Map<Object, Object> parameters, Object config, String prefix) {
         if (config == null) {
             return;

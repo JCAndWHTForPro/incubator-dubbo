@@ -140,6 +140,11 @@ public class ConfigUtils {
         return sb.toString();
     }
 
+    /**
+     * 这个方法也很有意思，主要是dubbo启动时候怎么加载属性的
+     * 分别从几个地方进行加载
+     * @return
+     */
     public static Properties getProperties() {
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
@@ -302,6 +307,10 @@ public class ConfigUtils {
         return file != null && file.exists() ? true : false;
     }
 
+    /**
+     * 恩，学学人家，怎么获取进程id！
+     * @return
+     */
     public static int getPid() {
         if (PID < 0) {
             try {
