@@ -20,6 +20,12 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.zookeeper.ZookeeperClient;
 import com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
+/**
+ * 初始化zk的客户端，这里使用的是curator，也是通过api机制加载进来的
+ * @ClassName:      CuratorZookeeperTransporter
+ * @Author:         jicheng
+ * @CreateDate:     2019/9/5 下午3:46
+ */
 public class CuratorZookeeperTransporter implements ZookeeperTransporter {
 
     @Override
