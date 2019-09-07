@@ -522,6 +522,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
                         }
 
+                        // 注意，这里invoker里面包装了URL一个对象
+                        // URL对象中protocol是registry
+                        // 在后面使用protocol.export的时候，
+                        // 首先被调用的其实是：com.alibaba.dubbo.registry.integration.RegistryProtocol.export方法
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
