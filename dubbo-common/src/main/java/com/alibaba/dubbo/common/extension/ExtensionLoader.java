@@ -85,6 +85,21 @@ public class ExtensionLoader<T> {
      */
     private final Class<?> type;
 
+
+     /**
+      * 对象工厂
+      *
+      * 用于调用 {@link #injectExtension(Object)} 方法，向拓展对象注入依赖属性。
+      *
+      * 例如，StubProxyFactoryWrapper 中有 `Protocol protocol` 属性。
+      *
+      * 这个东西类似于保存所有对象的必要属性，例如：com.alibaba.dubbo.registry.integration.RegistryProtocol
+      * 这个里面有几个set方法：setProtocol、setRegistryFactory、setCluster、setProxyFactory
+      * 那么，我们通过ExtendsionLoader的getExtension方法进行加载RegistryProtocol实例的时候，就会将当前对象中已经加载的
+      * Protocol、RegistryFactory等注入到RegistryProtocol中，然后再RegistryProtocol里面使用
+      * 其实也是一种依赖注入
+      *
+      * */
     private final ExtensionFactory objectFactory;
 
     /**
@@ -156,6 +171,7 @@ public class ExtensionLoader<T> {
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
+        // 这里会进行初始化依赖注入工厂
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
 
