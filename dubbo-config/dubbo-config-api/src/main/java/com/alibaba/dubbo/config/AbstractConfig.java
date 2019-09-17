@@ -89,6 +89,12 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
+    /**
+     * 这个方法主要把各个config对象里面的set方法的属性值赋值
+     * 1、会首先从系统环境变量中取值
+     * 2、没有的话会从当前config对象的getXxx方法中获取
+     * @param config
+     */
     protected static void appendProperties(AbstractConfig config) {
         if (config == null) {
             return;
