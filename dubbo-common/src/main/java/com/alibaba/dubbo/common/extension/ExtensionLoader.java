@@ -179,6 +179,10 @@ public class ExtensionLoader<T> {
         return type.isAnnotationPresent(SPI.class);
     }
 
+    /**
+     * 这个方法是为每个spi加载类创建一个ExtensionLoader
+     * 然后缓存起来
+     */
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (type == null)
@@ -518,6 +522,7 @@ public class ExtensionLoader<T> {
                     instance = cachedAdaptiveInstance.get();
                     if (instance == null) {
                         try {
+                            // 这个内部会更具注解，生成一个代理类（字符串拼接的class）
                             instance = createAdaptiveExtension();
                             cachedAdaptiveInstance.set(instance);
                         } catch (Throwable t) {
@@ -670,6 +675,7 @@ public class ExtensionLoader<T> {
         }
 
         Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
+        // 具体几个目录加载spi实现类
         loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY);
         loadDirectory(extensionClasses, DUBBO_DIRECTORY);
         loadDirectory(extensionClasses, SERVICES_DIRECTORY);
@@ -703,12 +709,14 @@ public class ExtensionLoader<T> {
             BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), "utf-8"));
             try {
                 String line;
+                // 这里就开始一行行读取spi文件中的记录了（主要就是key值和具体实现的类名）
                 while ((line = reader.readLine()) != null) {
                     final int ci = line.indexOf('#');
                     if (ci >= 0) line = line.substring(0, ci);
                     line = line.trim();
                     if (line.length() > 0) {
                         try {
+                            // 这里就是会对spi文件里面的一行，进行字符串的切割
                             String name = null;
                             int i = line.indexOf('=');
                             if (i > 0) {
@@ -716,6 +724,7 @@ public class ExtensionLoader<T> {
                                 line = line.substring(i + 1).trim();
                             }
                             if (line.length() > 0) {
+                                // 这里面会根据不同的spi文件里面的实现类，进行拓展
                                 loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
                             }
                         } catch (Throwable t) {
@@ -734,11 +743,14 @@ public class ExtensionLoader<T> {
     }
 
     private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {
+        // 首先判断，如果本次加载的实现类不是接口的子类，就报错
         if (!type.isAssignableFrom(clazz)) {
             throw new IllegalStateException("Error when load extension class(interface: " +
                     type + ", class line: " + clazz.getName() + "), class "
                     + clazz.getName() + "is not subtype of interface.");
         }
+        // 判断这个类是不是直接被标记了Adaptive
+        // 是的话，直接赋值给cachedAdaptiveClass缓存，不用后面动态生成了
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             if (cachedAdaptiveClass == null) {
                 cachedAdaptiveClass = clazz;
@@ -747,14 +759,18 @@ public class ExtensionLoader<T> {
                         + cachedAdaptiveClass.getClass().getName()
                         + ", " + clazz.getClass().getName());
             }
-        } else if (isWrapperClass(clazz)) {
+        }
+        // 如果这个类是包装类，也不用动态生成了，直接赋给cachedAdaptiveClass缓存
+        else if (isWrapperClass(clazz)) {
             Set<Class<?>> wrappers = cachedWrapperClasses;
             if (wrappers == null) {
                 cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
                 wrappers = cachedWrapperClasses;
             }
             wrappers.add(clazz);
-        } else {
+        }
+        // 最后这种是最通用的情况，
+        else {
             clazz.getConstructor();
             if (name == null || name.length() == 0) {
                 name = findAnnotationName(clazz);
@@ -818,9 +834,12 @@ public class ExtensionLoader<T> {
         // 这里通过当前ExtensionLoader的类加载器，加载对应目录下面的spi文件：
         // 例如META-INF/dubbo/这个目录
         getExtensionClasses();
+        // 注意下面这个if，在类名上面注解了Adaptive的类，会直接被缓存，直接默认使用，后面不用动态生成
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;
         }
+        // 下面这个是动态生成class字符串的方法
+        // createAdaptiveExtensionClass 这个方法就是生成class的字符串
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
 
@@ -959,6 +978,7 @@ public class ExtensionLoader<T> {
                 String getNameCode = null;
                 for (int i = value.length - 1; i >= 0; --i) {
                     if (i == value.length - 1) {
+                        // 这里复杂的判断，主要区别开来protocol的动态类的生成和其他的动态类的生成
                         if (null != defaultExtName) {
                             if (!"protocol".equals(value[i]))
                                 if (hasInvocation)
