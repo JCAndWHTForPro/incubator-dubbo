@@ -99,6 +99,10 @@ public class ExtensionLoader<T> {
       * Protocol、RegistryFactory等注入到RegistryProtocol中，然后再RegistryProtocol里面使用
       * 其实也是一种依赖注入
       *
+      *
+      * 这个东西的核心实现类有：
+      * com.alibaba.dubbo.common.extension.factory.AdaptiveExtensionFactory
+      * com.alibaba.dubbo.common.extension.factory.SpiExtensionFactory
       * */
     private final ExtensionFactory objectFactory;
 

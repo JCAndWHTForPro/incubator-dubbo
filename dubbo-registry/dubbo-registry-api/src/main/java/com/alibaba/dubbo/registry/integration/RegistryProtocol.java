@@ -104,6 +104,10 @@ public class RegistryProtocol implements Protocol {
         this.protocol = protocol;
     }
 
+    /**
+     * 不要小看这些set方法，在ExtensionLoader里面都会被注入动态生成的对象
+     * 这个对象，是有的是直接的class生成，有的是动态class字符串生成的
+     */
     public void setRegistryFactory(RegistryFactory registryFactory) {
         this.registryFactory = registryFactory;
     }
